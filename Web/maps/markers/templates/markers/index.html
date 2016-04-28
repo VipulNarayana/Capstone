@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>A simple map</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no'  http-equiv="refresh" content="60"/>
+<script  src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
+<script type="text/javascript">    
+     setInterval(function() {
+                  window.location.reload();
+                }, 10000); 
+</script>
+<link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet' />
+<style>
+  body { 
+			margin:0; 
+			padding:0; 
+		}
+  #map { 
+			position:absolute; 
+			top:0; 
+			bottom:0; 
+			width:100%; 
+		}
+  #legend{
+			border : 2px solid white;
+			position:absolute; 
+			top:120px; 
+			right:20px;
+			background : white;
+			
+		 }
+		 
+	#tra{
+	color:red;
+	font-weight:bold;
+	}
+</style>
+</head>
+<body>
+
+<div id='map'></div>
+<script>
+L.mapbox.accessToken = 'pk.eyJ1IjoidmlwdWwyNSIsImEiOiJjaW13eGd3b3AwM2YwdXdtNG45M2NpdGR0In0.ddSQPg_l0f6H2mNDpzzhOw';
+var map = L.mapbox.map('map', 'mapbox.streets')
+    .setView([12.841077, 80.153179], 17);
+
+var route = { type: 'LineString', coordinates: [] };
+var route1 = { type: 'LineString', coordinates: [] };
+
+var start = [12.842264, 80.152833];
+ 
+var lat = [12.842396,12.842323,12.842323,12.842218,12.842134,12.842071,12.842019,12.841977,
+12.841904,12.841810,12.841747,12.841674,12.841591,12.841486,12.841423,12.841329,12.840984, 12.840963, 12.840942, 12.840918, 12.840894, 12.840863, 12.840816, 12.840785,12.840746, 12.840704, 12.840671, 12.840637, 12.840608,12.840579, 12.840548,12.840519, 12.840477,12.840438, 12.840386];
+var lng = [80.152772,80.152793,80.152825,80.152868,80.152954,80.153040,80.153115,80.153179,
+80.153243,80.153297,80.153394,80.153469,80.153533,80.153586,80.153597,80.153599,80.153496 , 80.153483, 80.153472,80.153453,80.153437,80.153418,80.153388,80.153364,80.153340,80.153305,80.153281,80.153235,80.153197,80.153157,80.153119,80.153086,80.153038,80.152980,80.152921];
+for (var i = 0; i < 35; i++) {
+    start[1] = lat[i];
+    start[0] = lng[i];
+    route.coordinates.push(start.slice());
+}
+
+lat1 = new Array();
+lng1 = new Array();
+
+lat1[0] = 12.842396;
+lng1[0] = 80.152772;
+for ( i = 1; i < 10; i++) 
+{
+    lat1[i] = lat[i-1] + 0.0004 ;
+    lng1[i] = lng[i-1] + 0.0004;
+    route1.coordinates.push(start.slice());
+}
+
+var poly={
+  color:'#3b2dca',
+  weight:8,
+  fillOpacity: 0.6 
+};
+// Add this generated geojson object to the map.
+L.geoJson(route1,poly).addTo(map);
+var  j = 34;
+ k = 0;
+ lat = 12.840386;
+ lng = 80.152921;
+ bike = 0 ;
+ car = 0;
+ finallat = 12.842396;
+ finallng = 80.152772;
+ count = 0;
+ bikecount = 0;
+ carcount = 0;
+marker = new Array();
+mark1  = new Array();
+vech = new Array();
+ {% for veh in veh_all %}
+{% if veh.flag == 0 %}
+{% if veh.vehicle == 'Car' %}
+ car = car + 1;
+ {% else %}
+ bike = bike + 1;
+ {% endif %}
+  {% endif %}
+  {% endfor %}
+ 
+ for(i=0;i<car;i++)
+{
+ marker[k] = L.marker([lat,lng], {
+  icon: L.mapbox.marker.icon({
+    'marker-color': '#f86767',
+    'marker-symbol':'car',
+    'marker-size':'large',
+  })});
+  lat = lat + 0.00001;
+  lng = lng + 0.00001;
+  vech[k] = 'car';
+k++;
+} 
+for(i=0;i<bike;i++)
+{
+  marker[k] = L.marker([lat,lng], {
+  icon: L.mapbox.marker.icon({
+    'marker-color': '#abdca7',
+    'marker-symbol':'bicycle',
+    'marker-size':'large',
+  })});
+  lat = lat + 0.00002;
+  lng = lng + 0.00002;
+vech[k] = 'bike';
+k++;
+}
+for(i=0;i<k;i++)
+{
+	L.geoJson(route,poly).addTo(map);
+	marker[i].addTo(map);
+}
+tick(marker,vech);
+
+function tick(mark,vehicle)
+{
+	if ( count == k)
+	{
+		
+		for ( clear = 0 ; clear < count ; clear++ )
+		{
+			//map.removeLayer(mark1[clear]);
+		}
+		return 
+	}
+	mark[count].setLatLng(L.latLng(
+	route.coordinates[j][1],
+	route.coordinates[j][0]));
+    if (--j > 0) 
+		{
+			setTimeout(function(){tick(mark,vehicle)}, 75)
+			
+		}
+	if( j == 0)
+		{
+			map.removeLayer(mark[count]);
+			j = 34;
+			if (vehicle[count] == 'car')
+			{
+				 car = car - 1;
+				 document.getElementById('car').innerHTML = carcount;
+				 mark1[count]= L.marker([finallat, finallng], {
+							icon: L.mapbox.marker.icon({
+							'marker-color': '#f86767',
+							'marker-symbol':'car',
+							'marker-size':'large',})
+							}).addTo(map);
+				
+			}
+			if (vehicle[count] == 'bike')
+			{
+				bike = bike - 1;
+				document.getElementById('bike').innerHTML = bikecount;
+
+				mark1[count] = L.marker([finallat, finallng], {
+							icon: L.mapbox.marker.icon({
+							'marker-color': '#abdca7',
+							'marker-symbol':'bicycle',
+							'marker-size':'large',
+							})
+							}).addTo(map);
+			}
+			finallat = finallat + .00002;
+			finallng = finallng + .00001;
+			count++;
+			tick(mark,vehicle)
+			
+		}
+		
+		
+}
+
+var totalcount="{{totcount}}";
+
+</script>
+
+
+<div id='legend' >
+  <strong>Vehicle Count</strong>
+  <br>
+	{% load staticfiles %}
+	<img src="{% static 'markers/bike.png' %}" alt="bike"/>
+	<label id = "bike">0</label>
+	
+	<br>
+	{% load staticfiles %}
+	<img src="{% static 'markers/car.png' %}" alt="car"/>
+	 <label id = "car">0</label>
+	 
+	<br>
+	<span id='tra'>Traffic intensity :</span>
+	<label id = "total">0</label>
+</div>
+<script>
+	 document.getElementById('bike').innerHTML = bike;
+	document.getElementById('car').innerHTML = car;
+	document.getElementById('total').innerHTML =totalcount;
+
+	//map.legendControl.addLegend(document.getElementById('legend').innerHTML);
+</script>
+</body>
+</html>
